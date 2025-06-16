@@ -22,4 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-routeTree.gen.ts
+
+# tanstack router shiz
+**/routeTree.gen.ts
+.tanstack/**

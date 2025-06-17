@@ -10,6 +10,7 @@ For inquiries please email us at change@pili-pinas.com
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 - [@tanstack/react-router](https://tanstack.com/router/latest/docs/framework/react/routing/file-based-routing) for File Base Routing
+- [shadcn/ui](https://ui.shadcn.com/) as a base for beautiful and accessible UI components built with Radix UI and Tailwind CSS
 
 ## Expanding the ESLint configuration
 

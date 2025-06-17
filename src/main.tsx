@@ -1,12 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./main.css";
+import "@/main.css";
 import {
   createHashHistory,
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
+import { routeTree } from "@/routeTree.gen";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // Github Pages dones't support routing for SPA
 // Recommended to use hash routing https://github.com/orgs/community/discussions/64096
@@ -22,6 +23,8 @@ declare module "@tanstack/react-router" {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  </StrictMode>
 );

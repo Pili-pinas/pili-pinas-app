@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import React from "react";
 import { useAuthStore } from "../auth-store";
@@ -38,11 +40,11 @@ function RouteComponent() {
   };
 
   return (
-    <main>
-      <form onSubmit={handleSubmit}>
-        <input name="email" type="email" placeholder="Email" />
-        <input name="password" type="password" placeholder="Password" />
-        <button type="submit">Login</button>
+    <main  className="flex h-screen items-center justify-center">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
+        <Input name="email" type="email" placeholder="Email" />
+        <Input name="password" type="password" placeholder="Password" />
+        <Button type="submit">Login</Button>
       </form>
     </main>
   );

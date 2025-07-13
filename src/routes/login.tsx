@@ -40,7 +40,7 @@ function RouteComponent() {
   };
 
   return (
-    <main  className="flex h-screen items-center justify-center">
+    <main className="flex h-screen items-center justify-center">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
         <Input name="email" type="email" placeholder="Email" />
         <Input name="password" type="password" placeholder="Password" />

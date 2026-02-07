@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Graffiti paint drip effect */
+@keyframes drip {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    height: 60px;
+    opacity: 0.6;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sprayIn {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(0.8);
+  }
+  60% {
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.graffiti-font {
+  font-family: 'Permanent Marker', cursive;
+}
+
+.graffiti-title {
+  animation: sprayIn 1.2s ease-out forwards;
+  transform: rotate(-2deg);
+  text-shadow:
+    3px 3px 0px rgba(255, 255, 255, 0.1),
+    -1px -1px 0px rgba(255, 255, 255, 0.05);
+}
+
+.graffiti-subtitle {
+  animation: fadeInUp 1s ease-out 0.6s forwards;
+  opacity: 0;
+}
+
+.brick-wall {
+  background-image:
+    linear-gradient(to right, white 1px, transparent 1px),
+    linear-gradient(to bottom, white 1px, transparent 1px);
+  background-size: 60px 30px;
+}
+
+.spray-streak {
+  background: linear-gradient(135deg, transparent 30%, white 50%, transparent 70%);
+}
+
+.spray-underline {
+  mask-image: linear-gradient(90deg, transparent, white 10%, white 80%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, white 10%, white 80%, transparent);
+}
+
+.drip-slow {
+  animation: drip 3s ease-in 1.5s forwards;
+}
+
+.drip-slower {
+  animation: drip 4s ease-in 2s forwards;
+}
+
+.paint-splatter {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  opacity: 0.03;
+  pointer-events: none;
+}
+
+/* Noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}

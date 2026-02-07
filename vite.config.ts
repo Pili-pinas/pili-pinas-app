@@ -4,6 +4,7 @@ import tanstackRouter from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 import { createHtmlPlugin } from "vite-plugin-html";
+import svgr from "vite-plugin-svgr";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,6 +12,7 @@ export default defineConfig({
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     react(),
     tailwindcss(),
+    svgr(),
     createHtmlPlugin({
       minify: true,
     }),

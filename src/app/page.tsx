@@ -29,6 +29,15 @@ export default function Home() {
           Pili-Pinas
         </p>
 
+        {/* Contact Us link */}
+        <a
+          href="/contact"
+          className="graffiti-font graffiti-subtitle mt-12 border-2 border-white/30 px-8 py-3 text-sm tracking-[0.3em] text-white/60 uppercase transition-all duration-200 hover:border-white hover:text-white sm:mt-16"
+          style={{ animationDelay: '0.9s' }}
+        >
+          Contact Us
+        </a>
+
         {/* Drip elements from title */}
         <div className="pointer-events-none absolute top-[55%] left-[20%] hidden sm:block">
           <div className="drip-slow w-[2px] bg-white/20" />

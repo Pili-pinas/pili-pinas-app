@@ -7,19 +7,32 @@ import Chat from "@/components/Chat";
 const AUTH_URL = "https://rag-pipeline-91ct.vercel.app";
 const STORAGE_KEY = "apiKey";
 
+type Tab = "login" | "token";
+
 export default function ChatPage() {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [tab, setTab] = useState<Tab>("login");
+
+  // Login form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Token form state
+  const [token, setToken] = useState("");
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     setApiKey(stored);
     setReady(true);
   }, []);
+
+  function switchTab(next: Tab) {
+    setTab(next);
+    setError("");
+  }
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -52,11 +65,20 @@ export default function ChatPage() {
     }
   }
 
+  function handleTokenSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = token.trim();
+    if (!trimmed) return;
+    localStorage.setItem(STORAGE_KEY, trimmed);
+    setApiKey(trimmed);
+  }
+
   function handleLogout() {
     localStorage.removeItem(STORAGE_KEY);
     setApiKey(null);
     setEmail("");
     setPassword("");
+    setToken("");
     setError("");
   }
 
@@ -99,40 +121,85 @@ export default function ChatPage() {
         ) : (
           <div className="flex flex-1 items-center justify-center px-6">
             <div className="w-full max-w-sm">
-              <p className="graffiti-font mb-8 text-center text-sm tracking-[0.2em] text-white/40 uppercase">
-                Mag-login muna
-              </p>
-
-              <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="border-2 border-white/30 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="border-2 border-white/30 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white"
-                />
-
-                {error && (
-                  <p className="text-center text-sm text-red-400">{error}</p>
-                )}
-
+              {/* Tabs */}
+              <div className="mb-8 flex border-b border-white/10">
                 <button
-                  type="submit"
-                  disabled={submitting}
-                  className="graffiti-font mt-2 border-2 border-white px-8 py-3 text-sm tracking-[0.3em] text-white uppercase transition-all duration-200 hover:bg-white hover:text-black disabled:opacity-40"
+                  role="tab"
+                  aria-selected={tab === "login"}
+                  onClick={() => switchTab("login")}
+                  className={`graffiti-font flex-1 pb-3 text-xs tracking-[0.25em] uppercase transition-colors duration-200 ${
+                    tab === "login"
+                      ? "border-b-2 border-white text-white"
+                      : "text-white/30 hover:text-white/60"
+                  }`}
                 >
-                  {submitting ? "..." : "Login"}
+                  Login
                 </button>
-              </form>
+                <button
+                  role="tab"
+                  aria-selected={tab === "token"}
+                  onClick={() => switchTab("token")}
+                  className={`graffiti-font flex-1 pb-3 text-xs tracking-[0.25em] uppercase transition-colors duration-200 ${
+                    tab === "token"
+                      ? "border-b-2 border-white text-white"
+                      : "text-white/30 hover:text-white/60"
+                  }`}
+                >
+                  Token
+                </button>
+              </div>
+
+              {/* Login form */}
+              {tab === "login" && (
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="border-2 border-white/30 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="border-2 border-white/30 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white"
+                  />
+                  {error && (
+                    <p className="text-center text-sm text-red-400">{error}</p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="graffiti-font mt-2 border-2 border-white px-8 py-3 text-sm tracking-[0.3em] text-white uppercase transition-all duration-200 hover:bg-white hover:text-black disabled:opacity-40"
+                  >
+                    {submitting ? "..." : "Login"}
+                  </button>
+                </form>
+              )}
+
+              {/* Token form */}
+              {tab === "token" && (
+                <form onSubmit={handleTokenSubmit} className="flex flex-col gap-4">
+                  <input
+                    type="text"
+                    placeholder="Paste your API token"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    className="border-2 border-white/30 bg-transparent px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-colors focus:border-white"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!token.trim()}
+                    className="graffiti-font mt-2 border-2 border-white px-8 py-3 text-sm tracking-[0.3em] text-white uppercase transition-all duration-200 hover:bg-white hover:text-black disabled:opacity-40"
+                  >
+                    Use Token
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         )}

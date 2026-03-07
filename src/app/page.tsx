@@ -29,14 +29,23 @@ export default function Home() {
           Pili-Pinas
         </p>
 
-        {/* Contact Us link */}
-        <a
-          href="/contact"
-          className="graffiti-font graffiti-subtitle mt-12 border-2 border-white/30 px-8 py-3 text-sm tracking-[0.3em] text-white/60 uppercase transition-all duration-200 hover:border-white hover:text-white sm:mt-16"
-          style={{ animationDelay: '0.9s' }}
-        >
-          Contact Us
-        </a>
+        {/* CTA buttons */}
+        <div className="graffiti-subtitle flex flex-col items-center gap-4 mt-12 sm:mt-16 sm:flex-row">
+          <a
+            href="/chat"
+            className="graffiti-font border-2 border-white px-8 py-3 text-sm tracking-[0.3em] text-white uppercase transition-all duration-200 hover:bg-white hover:text-black"
+            style={{ animationDelay: '0.9s' }}
+          >
+            Tanong Mo!
+          </a>
+          <a
+            href="/contact"
+            className="graffiti-font border-2 border-white/30 px-8 py-3 text-sm tracking-[0.3em] text-white/60 uppercase transition-all duration-200 hover:border-white hover:text-white"
+            style={{ animationDelay: '1.1s' }}
+          >
+            Contact Us
+          </a>
+        </div>
 
         {/* Drip elements from title */}
         <div className="pointer-events-none absolute top-[55%] left-[20%] hidden sm:block">

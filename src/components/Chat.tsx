@@ -3,19 +3,25 @@
 import { useState, useRef, useEffect } from "react";
 import type { Message, QueryResponse } from "@/lib/types";
 
-async function queryApi(question: string): Promise<QueryResponse> {
+async function queryApi(question: string, apiKey: string): Promise<QueryResponse> {
   const res = await fetch("/api/query", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-API-Key": apiKey,
+    },
     body: JSON.stringify({ question, top_k: 5 }),
   });
+  if (res.status === 401 || res.status === 403) {
+    throw new Error("unauthorized");
+  }
   if (!res.ok) {
     throw new Error(`Error ${res.status}`);
   }
   return res.json();
 }
 
-export default function Chat() {
+export default function Chat({ apiKey, onUnauthorized }: { apiKey: string; onUnauthorized: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +41,7 @@ export default function Chat() {
     setLoading(true);
 
     try {
-      const result = await queryApi(question);
+      const result = await queryApi(question, apiKey);
       const answer =
         result.chunks_used === 0
           ? "Hindi mahanap ang sagot sa aming database. / No relevant information found. Try rephrasing your question."
@@ -44,7 +50,11 @@ export default function Chat() {
         ...prev,
         { role: "assistant", content: answer, sources: result.sources },
       ]);
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.message === "unauthorized") {
+        onUnauthorized();
+        return;
+      }
       setMessages((prev) => [
         ...prev,
         {

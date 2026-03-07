@@ -2,10 +2,14 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const backendUrl = process.env.PILI_PINAS_API_URL;
-  const apiKey = process.env.PILI_PINAS_API_KEY ?? "";
+  const apiKey = req.headers.get("X-API-Key");
 
   if (!backendUrl) {
     return Response.json({ error: "API not configured" }, { status: 503 });
+  }
+
+  if (!apiKey) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const res = await fetch(`${backendUrl}/query`, {

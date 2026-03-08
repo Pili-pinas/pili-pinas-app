@@ -122,15 +122,15 @@ export default function ChatPage() {
           <div className="flex flex-1 items-center justify-center px-6">
             <div className="w-full max-w-sm">
               {/* Tabs */}
-              <div className="mb-8 flex border-b border-white/10">
+              <div className="mb-8 grid grid-cols-2 gap-3">
                 <button
                   role="tab"
                   aria-selected={tab === "login"}
                   onClick={() => switchTab("login")}
-                  className={`graffiti-font flex-1 pb-3 text-xs tracking-[0.25em] uppercase transition-colors duration-200 ${
+                  className={`graffiti-font border-2 py-3 text-sm tracking-[0.25em] uppercase transition-all duration-200 ${
                     tab === "login"
-                      ? "border-b-2 border-white text-white"
-                      : "text-white/30 hover:text-white/60"
+                      ? "border-white bg-white text-black"
+                      : "border-white/30 text-white/40 hover:border-white/60 hover:text-white/70"
                   }`}
                 >
                   Login
@@ -139,10 +139,10 @@ export default function ChatPage() {
                   role="tab"
                   aria-selected={tab === "token"}
                   onClick={() => switchTab("token")}
-                  className={`graffiti-font flex-1 pb-3 text-xs tracking-[0.25em] uppercase transition-colors duration-200 ${
+                  className={`graffiti-font border-2 py-3 text-sm tracking-[0.25em] uppercase transition-all duration-200 ${
                     tab === "token"
-                      ? "border-b-2 border-white text-white"
-                      : "text-white/30 hover:text-white/60"
+                      ? "border-white bg-white text-black"
+                      : "border-white/30 text-white/40 hover:border-white/60 hover:text-white/70"
                   }`}
                 >
                   Token

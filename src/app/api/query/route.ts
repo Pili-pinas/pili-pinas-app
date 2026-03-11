@@ -12,15 +12,26 @@ export async function POST(req: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const res = await fetch(`${backendUrl}/query`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": apiKey,
-    },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${backendUrl}/query`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": apiKey,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    return Response.json({ error: "Backend unreachable" }, { status: 502 });
+  }
 
-  const data = await res.json();
+  let data: unknown;
+  try {
+    data = await res.json();
+  } catch {
+    return Response.json({ error: `Backend error ${res.status}` }, { status: res.status || 502 });
+  }
+
   return Response.json(data, { status: res.status });
 }

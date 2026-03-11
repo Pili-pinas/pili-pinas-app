@@ -73,4 +73,26 @@ describe("POST /api/query", () => {
     const res = await POST(req);
     expect(res.status).toBe(429);
   });
+
+  it("returns 502 when backend is unreachable", async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error("ECONNREFUSED"));
+
+    const req = makeRequest({ question: "test" }, { "X-API-Key": "key123" });
+    const res = await POST(req);
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: "Backend unreachable" });
+  });
+
+  it("returns error when backend returns non-JSON response", async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => { throw new SyntaxError("Unexpected token"); },
+    });
+
+    const req = makeRequest({ question: "test" }, { "X-API-Key": "key123" });
+    const res = await POST(req);
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: "Backend error 503" });
+  });
 });

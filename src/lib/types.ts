@@ -21,5 +21,7 @@ export interface QueryResponse {
 
 export interface PopularQuestion {
   question: string;
-  count: number;
+  total_asks: number;
+  source_type: string | null;
+  cached_at: string;
 }

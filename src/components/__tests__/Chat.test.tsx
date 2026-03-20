@@ -6,9 +6,9 @@ const mockOnUnauthorized = jest.fn();
 const TEST_API_KEY = "test-key-123";
 
 const POPULAR_QUESTIONS = [
-  { question: "Sino si Marcos?", count: 42 },
-  { question: "Ano ang PDAF?", count: 38 },
-  { question: "Kailan ang eleksyon?", count: 30 },
+  { question: "Sino si Marcos?", total_asks: 42, source_type: null, cached_at: "2026-03-17T00:00:00Z" },
+  { question: "Ano ang PDAF?", total_asks: 38, source_type: null, cached_at: "2026-03-17T00:00:00Z" },
+  { question: "Kailan ang eleksyon?", total_asks: 30, source_type: null, cached_at: "2026-03-17T00:00:00Z" },
 ];
 
 function mockFetch({
@@ -25,7 +25,7 @@ function mockFetch({
       return Promise.resolve({
         ok: popularOk,
         status: popularOk ? 200 : 500,
-        json: async () => (popularOk ? popular : { error: "fail" }),
+        json: async () => (popularOk ? { questions: popular } : { error: "fail" }),
       });
     }
     return Promise.resolve({
@@ -46,7 +46,7 @@ describe("Chat", () => {
     // Default: popular returns empty, query tests override as needed
     global.fetch = jest.fn().mockImplementation((url: string) => {
       if (url === "/api/popular") {
-        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ questions: [] })});
       }
       return Promise.resolve({ ok: true, status: 200, json: async () => ({}) });
     });
@@ -109,7 +109,7 @@ describe("Chat", () => {
   it("calls onUnauthorized when API returns 401", async () => {
     global.fetch = jest.fn().mockImplementation((url: string) => {
       if (url === "/api/popular") {
-        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ questions: [] })});
       }
       return Promise.resolve({ ok: false, status: 401 });
     });
@@ -126,7 +126,7 @@ describe("Chat", () => {
     // override to return chunks_used: 0
     global.fetch = jest.fn().mockImplementation((url: string) => {
       if (url === "/api/popular") {
-        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ questions: [] })});
       }
       return Promise.resolve({
         ok: true, status: 200,
@@ -146,7 +146,7 @@ describe("Chat", () => {
   it("shows error message on network failure", async () => {
     global.fetch = jest.fn().mockImplementation((url: string) => {
       if (url === "/api/popular") {
-        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ questions: [] })});
       }
       return Promise.reject(new Error("Network error"));
     });

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { Message, QueryResponse, PopularQuestion } from "@/lib/types";
+import type { Message, QueryResponse } from "@/lib/types";
+import PopularQuestions from "./PopularQuestions";
 
 async function queryApi(question: string, apiKey: string): Promise<QueryResponse> {
   const res = await fetch("/api/query", {
@@ -25,21 +26,11 @@ export default function Chat({ apiKey, onUnauthorized }: { apiKey: string; onUna
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [popular, setPopular] = useState<PopularQuestion[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
-
-  useEffect(() => {
-    fetch("/api/popular", {
-      headers: { "X-API-Key": apiKey },
-    })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: PopularQuestion[]) => setPopular(Array.isArray(data) ? data : []))
-      .catch(() => {});
-  }, [apiKey]);
 
   async function handlePopularClick(question: string) {
     if (loading) return;
@@ -110,9 +101,16 @@ export default function Chat({ apiKey, onUnauthorized }: { apiKey: string; onUna
       {/* Message thread */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         {messages.length === 0 && (
-          <p className="text-center text-white/30 text-sm tracking-widest uppercase mt-16">
-            Magtanong tungkol sa pulitiko, batas, at eleksyon
-          </p>
+          <div className="flex flex-col items-center gap-6 mt-16">
+            <p className="text-center text-white/30 text-sm tracking-widest uppercase">
+              Magtanong tungkol sa pulitiko, batas, at eleksyon
+            </p>
+            <PopularQuestions
+              apiKey={apiKey}
+              onSelect={handlePopularClick}
+              disabled={loading}
+            />
+          </div>
         )}
 
         {messages.map((msg, i) => (
@@ -177,23 +175,6 @@ export default function Chat({ apiKey, onUnauthorized }: { apiKey: string; onUna
 
         <div ref={bottomRef} />
       </div>
-
-      {/* Popular question suggestions */}
-      {messages.length === 0 && popular.length > 0 && (
-        <div className="px-4 pb-3 flex flex-wrap gap-2 justify-center">
-          {popular.map((item, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => handlePopularClick(item.question)}
-              disabled={loading}
-              className="graffiti-font border border-white/30 px-3 py-1.5 text-xs text-white/60 tracking-wide hover:border-white hover:text-white transition-all duration-200 disabled:opacity-30"
-            >
-              {item.question}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Input bar */}
       <form

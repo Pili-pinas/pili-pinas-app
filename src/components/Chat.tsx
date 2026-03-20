@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import type { Message, QueryResponse } from "@/lib/types";
+import type { Message, QueryResponse, PopularQuestion } from "@/lib/types";
 
 async function queryApi(question: string, apiKey: string): Promise<QueryResponse> {
   const res = await fetch("/api/query", {
@@ -25,11 +25,49 @@ export default function Chat({ apiKey, onUnauthorized }: { apiKey: string; onUna
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [popular, setPopular] = useState<PopularQuestion[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    fetch("/api/popular", {
+      headers: { "X-API-Key": apiKey },
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: PopularQuestion[]) => setPopular(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [apiKey]);
+
+  async function handlePopularClick(question: string) {
+    if (loading) return;
+    setMessages((prev) => [...prev, { role: "user", content: question }]);
+    setLoading(true);
+    try {
+      const result = await queryApi(question, apiKey);
+      const answer =
+        result.chunks_used === 0
+          ? "Hindi mahanap ang sagot sa aming database. / No relevant information found. Try rephrasing your question."
+          : result.answer;
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: answer, sources: result.sources },
+      ]);
+    } catch (err) {
+      if (err instanceof Error && err.message === "unauthorized") {
+        onUnauthorized();
+        return;
+      }
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Sorry, something went wrong. Please try again." },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -139,6 +177,23 @@ export default function Chat({ apiKey, onUnauthorized }: { apiKey: string; onUna
 
         <div ref={bottomRef} />
       </div>
+
+      {/* Popular question suggestions */}
+      {messages.length === 0 && popular.length > 0 && (
+        <div className="px-4 pb-3 flex flex-wrap gap-2 justify-center">
+          {popular.map((item, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handlePopularClick(item.question)}
+              disabled={loading}
+              className="graffiti-font border border-white/30 px-3 py-1.5 text-xs text-white/60 tracking-wide hover:border-white hover:text-white transition-all duration-200 disabled:opacity-30"
+            >
+              {item.question}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Input bar */}
       <form

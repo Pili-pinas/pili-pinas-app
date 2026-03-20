@@ -5,6 +5,37 @@ import Chat from "../Chat";
 const mockOnUnauthorized = jest.fn();
 const TEST_API_KEY = "test-key-123";
 
+const POPULAR_QUESTIONS = [
+  { question: "Sino si Marcos?", count: 42 },
+  { question: "Ano ang PDAF?", count: 38 },
+  { question: "Kailan ang eleksyon?", count: 30 },
+];
+
+function mockFetch({
+  popular = POPULAR_QUESTIONS,
+  popularOk = true,
+  queryAnswer = "Test answer",
+}: {
+  popular?: { question: string; count: number }[];
+  popularOk?: boolean;
+  queryAnswer?: string;
+} = {}) {
+  global.fetch = jest.fn().mockImplementation((url: string) => {
+    if (url === "/api/popular") {
+      return Promise.resolve({
+        ok: popularOk,
+        status: popularOk ? 200 : 500,
+        json: async () => (popularOk ? popular : { error: "fail" }),
+      });
+    }
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: async () => ({ answer: queryAnswer, sources: [], query: "q", chunks_used: 1 }),
+    });
+  });
+}
+
 function renderChat() {
   return render(<Chat apiKey={TEST_API_KEY} onUnauthorized={mockOnUnauthorized} />);
 }
@@ -12,6 +43,13 @@ function renderChat() {
 describe("Chat", () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    // Default: popular returns empty, query tests override as needed
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === "/api/popular") {
+        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+      }
+      return Promise.resolve({ ok: true, status: 200, json: async () => ({}) });
+    });
   });
 
   it("renders empty state prompt", () => {
@@ -31,11 +69,7 @@ describe("Chat", () => {
   });
 
   it("sends message and displays user bubble", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ answer: "Test answer", sources: [], query: "hello", chunks_used: 1 }),
-    });
+    mockFetch({ queryAnswer: "Test answer" });
 
     renderChat();
     const input = screen.getByPlaceholderText(/tanong mo dito/i);
@@ -46,11 +80,7 @@ describe("Chat", () => {
   });
 
   it("displays assistant response after query", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ answer: "Sagot dito", sources: [], query: "hello", chunks_used: 1 }),
-    });
+    mockFetch({ queryAnswer: "Sagot dito" });
 
     renderChat();
     await userEvent.type(screen.getByPlaceholderText(/tanong mo dito/i), "hello");
@@ -60,11 +90,7 @@ describe("Chat", () => {
   });
 
   it("sends X-API-Key header with query", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ answer: "ok", sources: [], query: "q", chunks_used: 1 }),
-    });
+    mockFetch();
 
     renderChat();
     await userEvent.type(screen.getByPlaceholderText(/tanong mo dito/i), "test");
@@ -81,7 +107,12 @@ describe("Chat", () => {
   });
 
   it("calls onUnauthorized when API returns 401", async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 401 });
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === "/api/popular") {
+        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+      }
+      return Promise.resolve({ ok: false, status: 401 });
+    });
 
     renderChat();
     await userEvent.type(screen.getByPlaceholderText(/tanong mo dito/i), "test");
@@ -91,10 +122,16 @@ describe("Chat", () => {
   });
 
   it("shows fallback message when chunks_used is 0", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ answer: "ignored", sources: [], query: "q", chunks_used: 0 }),
+    mockFetch({ queryAnswer: "ignored", popular: [] });
+    // override to return chunks_used: 0
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === "/api/popular") {
+        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+      }
+      return Promise.resolve({
+        ok: true, status: 200,
+        json: async () => ({ answer: "ignored", sources: [], query: "q", chunks_used: 0 }),
+      });
     });
 
     renderChat();
@@ -107,7 +144,12 @@ describe("Chat", () => {
   });
 
   it("shows error message on network failure", async () => {
-    global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+    global.fetch = jest.fn().mockImplementation((url: string) => {
+      if (url === "/api/popular") {
+        return Promise.resolve({ ok: true, status: 200, json: async () => [] });
+      }
+      return Promise.reject(new Error("Network error"));
+    });
 
     renderChat();
     await userEvent.type(screen.getByPlaceholderText(/tanong mo dito/i), "test");
@@ -116,5 +158,63 @@ describe("Chat", () => {
     await waitFor(() =>
       expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
     );
+  });
+
+  describe("popular questions", () => {
+    it("fetches and displays popular questions as buttons on mount", async () => {
+      mockFetch();
+      renderChat();
+
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Sino si Marcos?" })).toBeInTheDocument()
+      );
+      expect(screen.getByRole("button", { name: "Ano ang PDAF?" })).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/popular",
+        expect.objectContaining({
+          headers: expect.objectContaining({ "X-API-Key": TEST_API_KEY }),
+        })
+      );
+    });
+
+    it("clicking a popular question submits it directly", async () => {
+      mockFetch();
+      renderChat();
+
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Sino si Marcos?" })).toBeInTheDocument()
+      );
+
+      await userEvent.click(screen.getByRole("button", { name: "Sino si Marcos?" }));
+
+      await waitFor(() =>
+        expect(screen.getByText("Sino si Marcos?")).toBeInTheDocument()
+      );
+    });
+
+    it("hides popular question buttons after first message is sent", async () => {
+      mockFetch();
+      renderChat();
+
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Sino si Marcos?" })).toBeInTheDocument()
+      );
+
+      await userEvent.click(screen.getByRole("button", { name: "Sino si Marcos?" }));
+
+      await waitFor(() =>
+        expect(screen.queryByRole("button", { name: "Sino si Marcos?" })).not.toBeInTheDocument()
+      );
+    });
+
+    it("does not crash when popular questions fetch fails", async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+      renderChat();
+
+      await waitFor(() =>
+        expect(screen.getByPlaceholderText(/tanong mo dito/i)).toBeInTheDocument()
+      );
+      expect(screen.queryByRole("button", { name: /sino/i })).not.toBeInTheDocument();
+    });
   });
 });

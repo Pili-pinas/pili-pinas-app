@@ -18,3 +18,8 @@ export interface QueryResponse {
   query: string;
   chunks_used: number;
 }
+
+export interface PopularQuestion {
+  question: string;
+  count: number;
+}
